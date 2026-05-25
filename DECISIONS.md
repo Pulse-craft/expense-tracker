@@ -45,6 +45,26 @@ This document tracks significant technical choices made during the project, the 
 - Slightly slower builds vs Apple Silicon, but acceptable.
 
 ---
+## 4. Backend Stack: AWS SAM + Lambda (nodejs22.x) + TypeScript
+
+**Chosen:** AWS SAM with Lambda functions running nodejs22.x on x86_64, TypeScript via the hello-world-typescript starter, Zip packaging, structured JSON logging enabled, X-Ray and CloudWatch Application Insights disabled.
+
+**Alternatives considered:** Serverless Framework, AWS CDK, plain CloudFormation, ECS/Fargate, Express on EC2.
+
+**Reasoning:**
+- SAM is AWS-native, free, and the standard tool for Lambda development.
+- nodejs22.x is the latest LTS runtime and matches the frontend language (less context switching).
+- TypeScript gives type safety end-to-end and matches the frontend stack.
+- x86_64 architecture matches local Intel Mac (Docker emulation of arm64 would be slow during local development).
+- Zip packaging is simpler than container images for a small project.
+- Structured JSON logs make CloudWatch Logs Insights queries much easier later.
+- X-Ray disabled for now to avoid extra costs; can be enabled if distributed tracing becomes needed.
+- CloudWatch Application Insights disabled (overkill and adds cost for a personal project).
+
+**Tradeoffs:** Cold starts on Lambda (mitigated by small bundle size with esbuild); vendor lock-in to AWS (acceptable given the learning goal); slightly higher CloudWatch costs from structured logging vs plain text.
+
+---
+
 
 ## Pending Decisions
 
