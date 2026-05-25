@@ -1,30 +1,82 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { randomUUID } from 'crypto';
+import { CreateExpenseInput, Expense, ExpenseCategory } from './types/expense';
+
+const VALID_CATEGORIES: ExpenseCategory[] = [
+  'food',
+  'transport',
+  'entertainment',
+  'bills',
+  'other',
+];
 
 /**
- *
- * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
- * @param {Object} event - API Gateway Lambda Proxy Input Format
- *
- * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
- * @returns {Object} object - API Gateway Lambda Proxy Output Format
- *
+ * Validates the incoming payload and returns either an error message
+ * or the parsed CreateExpenseInput.
  */
+const parseInput = (body: string | null): { error: string } | { input: CreateExpenseInput } => {
+  if (!body) {
+    return { error: 'Request body is required' };
+  }
 
-export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    try {
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                message: 'hello world',
-            }),
-        };
-    } catch (err) {
-        console.log(err);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({
-                message: 'some error happened',
-            }),
-        };
-    }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    return { error: 'Body must be valid JSON' };
+  }
+
+  if (typeof parsed !== 'object' || parsed === null) {
+    return { error: 'Body must be a JSON object' };
+  }
+
+  const { amount, category, date, description } = parsed as Record<string, unknown>;
+
+  if (typeof amount !== 'number' || amount <= 0) {
+    return { error: 'amount must be a positive number' };
+  }
+  if (typeof category !== 'string' || !VALID_CATEGORIES.includes(category as ExpenseCategory)) {
+    return { error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` };
+  }
+  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return { error: 'date must be a string in YYYY-MM-DD format' };
+  }
+  if (typeof description !== 'string' || description.trim().length === 0) {
+    return { error: 'description must be a non-empty string' };
+  }
+
+  return {
+    input: {
+      amount,
+      category: category as ExpenseCategory,
+      date,
+      description,
+    },
+  };
 };
+
+export const lambdaHandler = async (
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResult> => {
+  const result = parseInput(event.body);
+
+  if ('error' in result) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: result.error }),
+    };
+  }
+
+  const expense: Expense = {
+    id: randomUUID(),
+    userId: 'mock-user-id', // will come from Cognito auth later
+    ...result.input,
+    createdAt: new Date().toISOString(),
+  };
+
+  return {
+    statusCode: 201,
+    body: JSON.stringify(expense),
+  };
+};
+
