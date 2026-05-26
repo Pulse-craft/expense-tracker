@@ -65,12 +65,34 @@ This document tracks significant technical choices made during the project, the 
 
 ---
 
+## 5. Database: DynamoDB
+
+**Chosen:** Amazon DynamoDB (NoSQL, serverless, on-demand billing).
+
+**Alternatives considered:** RDS PostgreSQL, Aurora Serverless v2, SQLite on EFS.
+
+**Reasoning:**
+- DynamoDB is serverless and scales to zero: no idle cost when the app isn't used.
+- Free tier is generous and indefinite (25 GB storage, 25 WCU/RCU), unlike RDS which has only 12 months free tier.
+- Latency is consistent single-digit millisecond, ideal for Lambda.
+- Native integration with Lambda via the AWS SDK; no connection pooling concerns.
+- The expense-tracker access patterns are simple: list expenses by user, get/create/delete by id. No complex joins needed.
+- One table design with PK = `USER#<userId>` and SK = `EXPENSE#<expenseId>` covers all current queries.
+
+**Tradeoffs:**
+- Limited ad-hoc querying compared to SQL (no arbitrary WHERE/JOIN).
+- Schema design must follow access patterns upfront; redesign is harder later.
+- Reports/aggregations across users would need Streams + a derived store (acceptable; not needed yet).
+- Vendor lock-in to AWS (already accepted in Decision 4).
+
+---
+
 
 ## Pending Decisions
 
 These will be documented as the project progresses:
 
-- [ ] RDS PostgreSQL vs DynamoDB
+- [x] RDS PostgreSQL vs DynamoDB → DynamoDB (see Decision 5)
 - [ ] ORM choice: Prisma vs Drizzle vs plain pg
 - [ ] Cognito Hosted UI vs custom auth UI
 - [ ] React state management (Context vs Zustand vs Redux)
