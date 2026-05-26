@@ -1,0 +1,5 @@
+{
+  "body": "{\"amount\":15.50,\"category\":\"food\",\"date\":\"2026-05-26\",\"description\":\"lunch at cafe\"}",
+  "httpMethod": "POST",
+  "path": "/expenses"
+}
