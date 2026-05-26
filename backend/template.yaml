@@ -57,6 +57,34 @@ Resources:
             - AttributeName: SK
               KeyType: RANGE
 
+  ListExpensesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: list-expenses/
+      Handler: app.lambdaHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          EXPENSES_TABLE_NAME: !Ref ExpensesTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ExpensesTable
+      Events:
+        ListExpenses:
+          Type: Api
+          Properties:
+            Path: /expenses
+            Method: get
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints:
+          - app.ts
 
 Outputs:
   CreateExpenseApi:

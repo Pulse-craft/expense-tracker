@@ -42,5 +42,9 @@ export async function getExpensesByUser(userId: string): Promise<Expense[]> {
         }),
     );
 
-    return (result.Items ?? []) as Expense[];
+    return (result.Items ?? []).map((item) => {
+  const { PK, SK, ...expense } = item;
+  return expense as Expense;
+});
+
 }
