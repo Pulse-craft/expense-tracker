@@ -85,6 +85,35 @@ Resources:
         Sourcemap: true
         EntryPoints:
           - app.ts
+  GetExpenseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: get-expense/
+      Handler: app.lambdaHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          EXPENSES_TABLE_NAME: !Ref ExpensesTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ExpensesTable
+      Events:
+        GetExpense:
+          Type: Api
+          Properties:
+            Path: /expenses/{id}
+            Method: get
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints:
+          - app.ts
+
 
 Outputs:
   CreateExpenseApi:
