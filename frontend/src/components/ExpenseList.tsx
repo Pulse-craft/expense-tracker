@@ -1,4 +1,5 @@
 import type { Expense } from '../types/expense';
+import { CATEGORY_COLORS } from '../utils/categories';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -26,12 +27,16 @@ export function ExpenseList({ expenses, loading, error }: ExpenseListProps) {
           key={expense.id}
           className="bg-gray-800 p-4 rounded-lg flex justify-between items-center"
         >
-          <div>
-            <p className="text-white font-semibold">{expense.description}</p>
-            <p className="text-gray-400 text-sm">
-              {expense.category} · {expense.date}
-            </p>
-          </div>
+            <div className="flex items-center gap-3">
+              <span className={`w-3 h-3 rounded-full ${CATEGORY_COLORS[expense.category]}`} />
+              <div>
+                <p className="text-white font-semibold">{expense.description}</p>
+                <p className="text-gray-400 text-sm">
+                  {expense.category} · {expense.date}
+                </p>
+              </div>
+            </div>
+
           <p className="text-white text-lg font-bold">
             ${expense.amount.toFixed(2)}
           </p>

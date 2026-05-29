@@ -3,13 +3,8 @@ import type { Expense } from './types/expense';
 import { getExpenses } from './services/api';
 import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
-const CATEGORY_COLORS: Record<string, string> = {
-  food: 'bg-orange-600',
-  transport: 'bg-blue-600',
-  entertainment: 'bg-purple-600',
-  bills: 'bg-red-600',
-  other: 'bg-gray-600',
-};
+import { CATEGORY_COLORS } from './utils/categories';
+
 
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
