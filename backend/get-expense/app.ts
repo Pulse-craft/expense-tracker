@@ -21,7 +21,17 @@ export const lambdaHandler = async (
       };
     }
 
-    const userId = 'mock-user-id';
+  // userId comes from the Cognito JWT (sub claim).
+  const claims = event.requestContext.authorizer?.claims as Record<string, string> | undefined;
+  const userId = claims?.sub;
+  if (!userId) {
+    return {
+      statusCode: 401,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: 'Unauthorized' }),
+    };
+  }
+
     const expense = await getExpenseById(userId, expenseId);
 
     if (!expense) {

@@ -12,122 +12,172 @@ Globals:
     LoggingConfig:
       LogFormat: JSON
   Api:
+    Auth:
+      AddDefaultAuthorizerToCorsPreflight: false
+      DefaultAuthorizer: CognitoAuthorizer
+      Authorizers:
+        CognitoAuthorizer:
+          UserPoolArn: !GetAtt UserPool.Arn  
+
     Cors:
       AllowMethods: "'GET,POST,OPTIONS'"
-      AllowHeaders: "'Content-Type'"
+      AllowHeaders: "'Content-Type,Authorization'"
       AllowOrigin: "'*'"
 
+
+
+
 Resources:
-  CreateExpenseFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: hello-world/
-      Handler: app.lambdaHandler
-      Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          EXPENSES_TABLE_NAME: !Ref ExpensesTable
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ExpensesTable
+    CreateExpenseFunction:
+      Type: AWS::Serverless::Function
+      Properties:
+        CodeUri: hello-world/
+        Handler: app.lambdaHandler
+        Runtime: nodejs22.x
+        Architectures:
+          - x86_64
+        Environment:
+          Variables:
+            EXPENSES_TABLE_NAME: !Ref ExpensesTable
+        Policies:
+          - DynamoDBCrudPolicy:
+              TableName: !Ref ExpensesTable
 
-      Events:
-        CreateExpense:
-          Type: Api
+        Events:
+          CreateExpense:
+            Type: Api
+            Properties:
+              Path: /expenses
+              Method: post
+      Metadata:
+        BuildMethod: esbuild
+        BuildProperties:
+          Minify: true
+          Target: es2020
+          Sourcemap: true
+          EntryPoints:
+            - app.ts
+    ExpensesTable:
+          Type: AWS::DynamoDB::Table
           Properties:
-            Path: /expenses
-            Method: post
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2020
-        Sourcemap: true
-        EntryPoints:
-          - app.ts
-  ExpensesTable:
-        Type: AWS::DynamoDB::Table
+            TableName: !Sub "${AWS::StackName}-expenses"
+            BillingMode: PAY_PER_REQUEST
+            AttributeDefinitions:
+              - AttributeName: PK
+                AttributeType: S
+              - AttributeName: SK
+                AttributeType: S
+            KeySchema:
+              - AttributeName: PK
+                KeyType: HASH
+              - AttributeName: SK
+                KeyType: RANGE
+
+    ListExpensesFunction:
+      Type: AWS::Serverless::Function
+      Properties:
+        CodeUri: list-expenses/
+        Handler: app.lambdaHandler
+        Runtime: nodejs22.x
+        Architectures:
+          - x86_64
+        Environment:
+          Variables:
+            EXPENSES_TABLE_NAME: !Ref ExpensesTable
+        Policies:
+          - DynamoDBReadPolicy:
+              TableName: !Ref ExpensesTable
+        Events:
+          ListExpenses:
+            Type: Api
+            Properties:
+              Path: /expenses
+              Method: get
+      Metadata:
+        BuildMethod: esbuild
+        BuildProperties:
+          Minify: true
+          Target: "es2020"
+          Sourcemap: true
+          EntryPoints:
+            - app.ts
+    GetExpenseFunction:
+      Type: AWS::Serverless::Function
+      Properties:
+        CodeUri: get-expense/
+        Handler: app.lambdaHandler
+        Runtime: nodejs22.x
+        Architectures:
+          - x86_64
+        Environment:
+          Variables:
+            EXPENSES_TABLE_NAME: !Ref ExpensesTable
+        Policies:
+          - DynamoDBReadPolicy:
+              TableName: !Ref ExpensesTable
+        Events:
+          GetExpense:
+            Type: Api
+            Properties:
+              Path: /expenses/{id}
+              Method: get
+      Metadata:
+        BuildMethod: esbuild
+        BuildProperties:
+          Minify: true
+          Target: "es2020"
+          Sourcemap: true
+          EntryPoints:
+            - app.ts
+
+
+
+    UserPool:
+        Type: AWS::Cognito::UserPool
         Properties:
-          TableName: !Sub "${AWS::StackName}-expenses"
-          BillingMode: PAY_PER_REQUEST
-          AttributeDefinitions:
-            - AttributeName: PK
-              AttributeType: S
-            - AttributeName: SK
-              AttributeType: S
-          KeySchema:
-            - AttributeName: PK
-              KeyType: HASH
-            - AttributeName: SK
-              KeyType: RANGE
+          UserPoolName: !Sub "${AWS::StackName}-users"
+          UsernameAttributes:
+            - email
+          AutoVerifiedAttributes:
+            - email
+          Policies:
+            PasswordPolicy:
+              MinimumLength: 8
+              RequireLowercase: true
+              RequireUppercase: false
+              RequireNumbers: true
+              RequireSymbols: false
+          AccountRecoverySetting:
+            RecoveryMechanisms:
+              - Name: verified_email
+                Priority: 1
+    UserPoolClient:
+        Type: AWS::Cognito::UserPoolClient
+        Properties:
+          UserPoolId: !Ref UserPool
+          ClientName: !Sub "${AWS::StackName}-web-client"
+          GenerateSecret: false
+          ExplicitAuthFlows:
+            - ALLOW_USER_PASSWORD_AUTH
+            - ALLOW_USER_SRP_AUTH
+            - ALLOW_REFRESH_TOKEN_AUTH
+          PreventUserExistenceErrors: ENABLED
 
-  ListExpensesFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: list-expenses/
-      Handler: app.lambdaHandler
-      Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          EXPENSES_TABLE_NAME: !Ref ExpensesTable
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref ExpensesTable
-      Events:
-        ListExpenses:
-          Type: Api
-          Properties:
-            Path: /expenses
-            Method: get
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints:
-          - app.ts
-  GetExpenseFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: get-expense/
-      Handler: app.lambdaHandler
-      Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      Environment:
-        Variables:
-          EXPENSES_TABLE_NAME: !Ref ExpensesTable
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref ExpensesTable
-      Events:
-        GetExpense:
-          Type: Api
-          Properties:
-            Path: /expenses/{id}
-            Method: get
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints:
-          - app.ts
 
 
 Outputs:
   CreateExpenseApi:
     Description: API Gateway endpoint URL for Prod stage for Create Expense function
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/expenses/"
-  CreateExpenseFunction:
-    Description: Create Expense Lambda Function ARN
-    Value: !GetAtt CreateExpenseFunction.Arn
-  CreateExpenseFunctionIamRole:
-    Description: Implicit IAM Role created for Create Expense function
-    Value: !GetAtt CreateExpenseFunctionRole.Arn
+
+  UserPoolId:
+    Description: Cognito User Pool ID (for Amplify config)
+    Value: !Ref UserPool
+
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID (for Amplify config)
+    Value: !Ref UserPoolClient
+
+  UserPoolRegion:
+    Description: AWS Region of the User Pool
+    Value: !Ref AWS::Region

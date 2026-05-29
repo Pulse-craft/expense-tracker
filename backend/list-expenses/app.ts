@@ -10,8 +10,17 @@ const corsHeaders = {
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  // For now we use a mock user. Will come from Cognito later.
-  const userId = 'mock-user-id';
+  // userId comes from the Cognito JWT (sub claim).
+  const claims = event.requestContext.authorizer?.claims as Record<string, string> | undefined;
+  const userId = claims?.sub;
+  if (!userId) {
+    return {
+      statusCode: 401,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: 'Unauthorized' }),
+    };
+  }
+
 
   try {
     const expenses = await getExpensesByUser(userId);
