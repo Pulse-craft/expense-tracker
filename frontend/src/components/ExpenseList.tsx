@@ -1,19 +1,12 @@
-import { useEffect, useState } from 'react';
 import type { Expense } from '../types/expense';
-import { getExpenses } from '../services/api';
 
-export function ExpenseList() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface ExpenseListProps {
+  expenses: Expense[];
+  loading: boolean;
+  error: string | null;
+}
 
-  useEffect(() => {
-    getExpenses()
-      .then((data) => setExpenses(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
-
+export function ExpenseList({ expenses, loading, error }: ExpenseListProps) {
   if (loading) {
     return <p className="text-gray-400">Cargando gastos...</p>;
   }
@@ -27,7 +20,7 @@ export function ExpenseList() {
   }
 
   return (
-    <ul className="space-y-3 w-full max-w-md">
+    <ul className="space-y-3 w-full">
       {expenses.map((expense) => (
         <li
           key={expense.id}
