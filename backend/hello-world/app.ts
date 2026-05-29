@@ -50,12 +50,19 @@ const parseInput = (body: string | null): { error: string } | { input: CreateExp
     };
 };
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+};
+
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const result = parseInput(event.body);
 
     if ('error' in result) {
         return {
             statusCode: 400,
+      headers: corsHeaders,
             body: JSON.stringify({ error: result.error }),
         };
     }
@@ -73,12 +80,14 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         console.error('Failed to save expense to DynamoDB', err);
         return {
             statusCode: 500,
+      headers: corsHeaders,
             body: JSON.stringify({ error: 'Failed to save expense' }),
         };
     }
 
     return {
         statusCode: 201,
+      headers: corsHeaders,
         body: JSON.stringify(expense),
     };
 };

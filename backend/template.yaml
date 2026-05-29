@@ -11,6 +11,12 @@ Globals:
     Timeout: 3
     LoggingConfig:
       LogFormat: JSON
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowHeaders: "'Content-Type'"
+      AllowOrigin: "'*'"
+
 Resources:
   CreateExpenseFunction:
     Type: AWS::Serverless::Function

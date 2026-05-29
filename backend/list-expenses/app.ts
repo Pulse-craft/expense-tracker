@@ -1,6 +1,12 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { getExpensesByUser } from './services/expenseRepository';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+};
+
 export const lambdaHandler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
@@ -11,12 +17,14 @@ export const lambdaHandler = async (
     const expenses = await getExpensesByUser(userId);
     return {
       statusCode: 200,
+      headers: corsHeaders,
       body: JSON.stringify({ expenses }),
     };
   } catch (err) {
     console.error('Failed to fetch expenses from DynamoDB', err);
     return {
       statusCode: 500,
+      headers: corsHeaders,
       body: JSON.stringify({ error: 'Failed to fetch expenses' }),
     };
   }
