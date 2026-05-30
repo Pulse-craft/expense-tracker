@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react';
-import type { ExpenseCategory, CreateExpenseInput } from '../types/expense';
-import { createExpense } from '../services/api';
+import { useState, useEffect, type FormEvent } from 'react';
+import type { ExpenseCategory, CreateExpenseInput, Expense } from '../types/expense';
+import { createExpense, updateExpense } from '../services/api';
 
 const CATEGORIES: ExpenseCategory[] = [
   'food',
@@ -11,10 +11,12 @@ const CATEGORIES: ExpenseCategory[] = [
 ];
 
 interface ExpenseFormProps {
-  onExpenseCreated: () => void;
+  expenseToEdit: Expense | null;
+  onSaved: () => void;
+  onCancelEdit: () => void;
 }
 
-export function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
+export function ExpenseForm({ expenseToEdit, onSaved, onCancelEdit }: ExpenseFormProps) {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<ExpenseCategory>('food');
   const [description, setDescription] = useState('');
@@ -23,6 +25,20 @@ export function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+    if (expenseToEdit) {
+      setAmount(String(expenseToEdit.amount));
+      setCategory(expenseToEdit.category);
+      setDescription(expenseToEdit.description);
+      setDate(expenseToEdit.date);
+    } else {
+      setAmount('');
+      setCategory('food');
+      setDescription('');
+      setDate(new Date().toISOString().split('T')[0]);
+    }
+  }, [expenseToEdit]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -48,14 +64,21 @@ export function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
 
     setSubmitting(true);
     try {
-      await createExpense(input);
+            if (expenseToEdit) {
+        await updateExpense(expenseToEdit.id, input);
+      } else {
+        await createExpense(input);
+      }
       // Limpiar form
       setAmount('');
       setDescription('');
       setCategory('food');
       setDate(new Date().toISOString().split('T')[0]);
       // Avisar al padre que refresque la lista
-      onExpenseCreated();
+            onSaved();
+      if (expenseToEdit) {
+        onCancelEdit();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
@@ -68,7 +91,8 @@ export function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
       onSubmit={handleSubmit}
       className="bg-gray-800 p-6 rounded-lg space-y-4 mb-8"
     >
-      <h2 className="text-xl font-semibold text-white">Agregar gasto</h2>
+      <h2 className="text-xl font-semibold text-white">{expenseToEdit ? 'Editar gasto' : 'Agregar gasto'}</h2>
+
 
       <div>
         <label className="block text-sm text-gray-400 mb-1">Monto</label>
@@ -128,8 +152,18 @@ export function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
         disabled={submitting}
         className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {submitting ? 'Guardando...' : 'Agregar gasto'}
+        {submitting ? 'Guardando...' : expenseToEdit ? 'Guardar cambios' : 'Agregar gasto'}
+
       </button>
+              {expenseToEdit && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="w-full bg-gray-600 text-white py-2 rounded font-semibold hover:bg-gray-700"
+          >
+            Cancelar
+          </button>
+        )}
     </form>
   );
 }

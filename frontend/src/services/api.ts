@@ -41,3 +41,32 @@ export async function createExpense(
 
   return await response.json();
 }
+export async function deleteExpense(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/expenses/${id}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Error deleting expense: ${response.status}`);
+  }
+}
+export async function updateExpense(id: string, input: CreateExpenseInput): Promise<Expense> {
+  const response = await fetch(`${API_BASE_URL}/expenses/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...await getAuthHeaders(),
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Error updating expense: ${response.status}`);
+  }
+
+  return await response.json();
+}
+

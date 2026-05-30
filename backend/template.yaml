@@ -20,7 +20,7 @@ Globals:
           UserPoolArn: !GetAtt UserPool.Arn  
 
     Cors:
-      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
       AllowHeaders: "'Content-Type,Authorization'"
       AllowOrigin: "'*'"
 
@@ -121,6 +121,62 @@ Resources:
             Properties:
               Path: /expenses/{id}
               Method: get
+      Metadata:
+        BuildMethod: esbuild
+        BuildProperties:
+          Minify: true
+          Target: "es2020"
+          Sourcemap: true
+          EntryPoints:
+            - app.ts
+    DeleteExpenseFunction:
+      Type: AWS::Serverless::Function
+      Properties:
+        CodeUri: delete-expense/
+        Handler: app.lambdaHandler
+        Runtime: nodejs22.x
+        Architectures:
+          - x86_64
+        Environment:
+          Variables:
+            EXPENSES_TABLE_NAME: !Ref ExpensesTable
+        Policies:
+          - DynamoDBCrudPolicy:
+              TableName: !Ref ExpensesTable
+        Events:
+          DeleteExpense:
+            Type: Api
+            Properties:
+              Path: /expenses/{id}
+              Method: delete
+      Metadata:
+        BuildMethod: esbuild
+        BuildProperties:
+          Minify: true
+          Target: "es2020"
+          Sourcemap: true
+          EntryPoints:
+            - app.ts
+    UpdateExpenseFunction:
+      Type: AWS::Serverless::Function
+      Properties:
+        CodeUri: update-expense/
+        Handler: app.lambdaHandler
+        Runtime: nodejs22.x
+        Architectures:
+          - x86_64
+        Environment:
+          Variables:
+            EXPENSES_TABLE_NAME: !Ref ExpensesTable
+        Policies:
+          - DynamoDBCrudPolicy:
+              TableName: !Ref ExpensesTable
+        Events:
+          UpdateExpense:
+            Type: Api
+            Properties:
+              Path: /expenses/{id}
+              Method: put
       Metadata:
         BuildMethod: esbuild
         BuildProperties:

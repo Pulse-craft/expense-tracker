@@ -11,6 +11,8 @@ function App() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+
 
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
@@ -40,7 +42,7 @@ function App() {
       <div className="max-w-2xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-8">Expense Tracker</h1>
         <button onClick={signOut} className="mb-4 text-sm text-gray-400 hover:text-white">Cerrar sesión</button>
-        <ExpenseForm onExpenseCreated={fetchExpenses} />
+        <ExpenseForm expenseToEdit={editingExpense} onSaved={fetchExpenses} onCancelEdit={() => setEditingExpense(null)} />
                 <div className="flex flex-wrap gap-2 mb-4">
           {Object.entries(totalsByCategory).map(([category, amount]) => (
             <div
@@ -58,7 +60,8 @@ function App() {
           <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
         </div>
 
-        <ExpenseList expenses={expenses} loading={loading} error={error} />
+        <ExpenseList expenses={expenses} loading={loading} error={error} onExpenseDeleted={fetchExpenses} onEdit={setEditingExpense} />
+
       </div>
     </div>
   );
