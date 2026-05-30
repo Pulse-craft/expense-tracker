@@ -59,7 +59,7 @@ export function ExpenseForm({ expenseToEdit, onSaved, onCancelEdit }: ExpenseFor
       amount: amountNumber,
       category,
       description: description.trim(),
-      date,
+      date: date!,
     };
 
     setSubmitting(true);

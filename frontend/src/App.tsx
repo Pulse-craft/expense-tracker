@@ -47,7 +47,7 @@ function App() {
           {Object.entries(totalsByCategory).map(([category, amount]) => (
             <div
               key={category}
-              className={`${CATEGORY_COLORS[category] ?? 'bg-gray-600'} px-3 py-2 rounded-lg text-white text-sm flex gap-2 items-center`}
+              className={`${CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS] ?? 'bg-gray-600'} px-3 py-2 rounded-lg text-white text-sm flex gap-2 items-center`}
             >
               <span className="capitalize">{category}</span>
               <span className="font-semibold">${amount.toFixed(2)}</span>
