@@ -41,3 +41,14 @@ export async function createExpense(
 
   return await response.json();
 }
+export async function deleteExpense(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/expenses/${id}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Error deleting expense: ${response.status}`);
+  }
+}

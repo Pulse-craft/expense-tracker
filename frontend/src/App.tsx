@@ -58,7 +58,7 @@ function App() {
           <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
         </div>
 
-        <ExpenseList expenses={expenses} loading={loading} error={error} />
+        <ExpenseList expenses={expenses} loading={loading} error={error} onExpenseDeleted={fetchExpenses} />
       </div>
     </div>
   );

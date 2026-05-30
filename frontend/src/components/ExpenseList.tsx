@@ -1,13 +1,14 @@
 import type { Expense } from '../types/expense';
 import { CATEGORY_COLORS } from '../utils/categories';
+import { deleteExpense } from '../services/api';
 
 interface ExpenseListProps {
   expenses: Expense[];
   loading: boolean;
   error: string | null;
+    onExpenseDeleted: () => void;
 }
-
-export function ExpenseList({ expenses, loading, error }: ExpenseListProps) {
+export function ExpenseList({ expenses, loading, error, onExpenseDeleted }: ExpenseListProps) {
   if (loading) {
     return <p className="text-gray-400">Cargando gastos...</p>;
   }
@@ -18,6 +19,17 @@ export function ExpenseList({ expenses, loading, error }: ExpenseListProps) {
 
   if (expenses.length === 0) {
     return <p className="text-gray-400">No hay gastos todavía.</p>;
+  }
+  async function handleDelete(id: string) {
+    if (!window.confirm('¿Seguro que quieres eliminar este gasto?')) {
+      return;
+    }
+    try {
+      await deleteExpense(id);
+      onExpenseDeleted();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al eliminar el gasto');
+    }
   }
 
   return (
@@ -36,10 +48,17 @@ export function ExpenseList({ expenses, loading, error }: ExpenseListProps) {
                 </p>
               </div>
             </div>
-
+          <div className="flex items-center gap-4">
           <p className="text-white text-lg font-bold">
             ${expense.amount.toFixed(2)}
           </p>
+                      <button
+              onClick={() => handleDelete(expense.id)}
+              className="text-red-400 hover:text-red-300 text-sm"
+            >
+              Eliminar
+            </button>
+          </div>
         </li>
       ))}
     </ul>
