@@ -22,7 +22,7 @@ Globals:
     Cors:
       AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
       AllowHeaders: "'Content-Type,Authorization'"
-      AllowOrigin: "'*'"
+      AllowOrigin: "'https://main.d1bfigmggittui.amplifyapp.com'"
 
 
 
