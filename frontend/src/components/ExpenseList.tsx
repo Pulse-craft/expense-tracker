@@ -7,8 +7,9 @@ interface ExpenseListProps {
   loading: boolean;
   error: string | null;
     onExpenseDeleted: () => void;
+      onEdit: (expense: Expense) => void;
 }
-export function ExpenseList({ expenses, loading, error, onExpenseDeleted }: ExpenseListProps) {
+export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit }: ExpenseListProps) {
   if (loading) {
     return <p className="text-gray-400">Cargando gastos...</p>;
   }
@@ -52,6 +53,13 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted }: Expe
           <p className="text-white text-lg font-bold">
             ${expense.amount.toFixed(2)}
           </p>
+                      <button
+              onClick={() => onEdit(expense)}
+              className="text-blue-400 hover:text-blue-300 text-sm"
+            >
+              Editar
+            </button>
+
                       <button
               onClick={() => handleDelete(expense.id)}
               className="text-red-400 hover:text-red-300 text-sm"
