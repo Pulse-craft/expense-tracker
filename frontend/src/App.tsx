@@ -4,9 +4,10 @@ import { getExpenses } from './services/api';
 import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
 import { CATEGORY_COLORS } from './utils/categories';
-
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 function App() {
+  const { signOut } = useAuthenticator();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +39,7 @@ function App() {
     <div className="min-h-screen bg-gray-900 p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-8">Expense Tracker</h1>
+        <button onClick={signOut} className="mb-4 text-sm text-gray-400 hover:text-white">Cerrar sesión</button>
         <ExpenseForm onExpenseCreated={fetchExpenses} />
                 <div className="flex flex-wrap gap-2 mb-4">
           {Object.entries(totalsByCategory).map(([category, amount]) => (
