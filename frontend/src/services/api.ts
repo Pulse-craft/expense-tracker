@@ -2,7 +2,7 @@ import type { Expense, CreateExpenseInput } from '../types/expense';
 import { fetchAuthSession } from 'aws-amplify/auth';
 
 const API_BASE_URL =
-  'https://34gzk4gdcj.execute-api.us-east-1.amazonaws.com/Prod';
+  import.meta.env.VITE_API_BASE_URL;
 
   async function getAuthHeaders() {
   const session = await fetchAuthSession();
