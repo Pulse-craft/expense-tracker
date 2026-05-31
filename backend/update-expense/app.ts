@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { CreateExpenseInput, Expense, ExpenseCategory } from './types/expense';
 import { saveExpense } from './services/expenseRepository';
 
-const VALID_CATEGORIES: ExpenseCategory[] = ['food', 'transport', 'entertainment', 'bills', 'other'];
+
 
 /**
  * Validates the incoming payload and returns either an error message
@@ -29,10 +29,10 @@ const parseInput = (body: string | null): { error: string } | { input: CreateExp
     if (typeof amount !== 'number' || amount <= 0) {
         return { error: 'amount must be a positive number' };
     }
-    if (typeof category !== 'string' || !VALID_CATEGORIES.includes(category as ExpenseCategory)) {
-        return { error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` };
+        if (typeof category !== 'string' || category.trim().length === 0 || category.trim().length > 30) {
+        return { error: 'category must be a non-empty string (max 30 characters)' };
     }
-    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         return { error: 'date must be a string in YYYY-MM-DD format' };
     }
     if (typeof description !== 'string' || description.trim().length === 0) {
@@ -42,7 +42,7 @@ const parseInput = (body: string | null): { error: string } | { input: CreateExp
     return {
         input: {
             amount,
-            category: category as ExpenseCategory,
+            category: category.trim().toLowerCase() as ExpenseCategory,
             date,
             description,
         },
