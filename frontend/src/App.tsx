@@ -4,6 +4,7 @@ import { getExpenses } from './services/api';
 import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
 import { ExpenseFilters } from './components/ExpenseFilters';
+import { exportExpensesToCsv } from './utils/exportCsv';
 import { CATEGORY_COLORS } from './utils/categories';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
@@ -62,6 +63,12 @@ function App() {
   onToChange={setFilterTo}
   onClear={() => { setFilterCategory('all'); setFilterFrom(''); setFilterTo(''); }}
 />
+        <button
+          onClick={() => exportExpensesToCsv(filteredExpenses)}
+          className="mb-4 bg-green-600 hover:bg-green-500 text-white rounded-lg px-4 py-2 text-sm"
+        >
+          Exportar CSV
+        </button>
 
                 <div className="flex flex-wrap gap-2 mb-4">
           {Object.entries(totalsByCategory).map(([category, amount]) => (
