@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Expense } from '../types/expense';
 import { CATEGORY_COLORS } from '../utils/categories';
 import { deleteExpense } from '../services/api';
@@ -10,6 +11,25 @@ interface ExpenseListProps {
       onEdit: (expense: Expense) => void;
 }
 export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit }: ExpenseListProps) {
+    const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  const sorted = [...expenses].sort((a, b) => {
+    const cmp = sortBy === 'date'
+      ? a.date.localeCompare(b.date)
+      : a.amount - b.amount;
+    return sortDir === 'asc' ? cmp : -cmp;
+  });
+
+  function toggleSort(field: 'date' | 'amount') {
+    if (sortBy === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortDir('desc');
+    }
+  }
+
   if (loading) {
     return <p className="text-gray-400">Cargando gastos...</p>;
   }
@@ -34,8 +54,24 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
   }
 
   return (
+        <>
+      <div className="flex gap-2 mb-3">
+        <button
+          onClick={() => toggleSort('date')}
+          className="bg-gray-700 text-white rounded px-3 py-1 text-sm"
+        >
+          Fecha {sortBy === 'date' ? `(${sortDir})` : ''}
+        </button>
+        <button
+          onClick={() => toggleSort('amount')}
+          className="bg-gray-700 text-white rounded px-3 py-1 text-sm"
+        >
+          Monto {sortBy === 'amount' ? `(${sortDir})` : ''}
+        </button>
+      </div>
+
     <ul className="space-y-3 w-full">
-      {expenses.map((expense) => (
+      {sorted.map((expense) => (
         <li
           key={expense.id}
           className="bg-gray-800 p-4 rounded-lg flex justify-between items-center"
@@ -70,5 +106,7 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
         </li>
       ))}
     </ul>
+        </>
+
   );
 }
