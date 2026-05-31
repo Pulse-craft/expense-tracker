@@ -5,6 +5,7 @@ import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
 import { ExpenseFilters } from './components/ExpenseFilters';
 import { exportExpensesToCsv } from './utils/exportCsv';
+import { Dashboard } from './components/Dashboard';
 import { CATEGORY_COLORS } from './utils/categories';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
@@ -53,6 +54,7 @@ function App() {
       <div className="max-w-2xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-8">Expense Tracker</h1>
         <button onClick={signOut} className="mb-4 text-sm text-gray-400 hover:text-white">Cerrar sesión</button>
+        <Dashboard expenses={expenses} />
         <ExpenseForm expenseToEdit={editingExpense} onSaved={fetchExpenses} onCancelEdit={() => setEditingExpense(null)} />
           <ExpenseFilters
   category={filterCategory}
