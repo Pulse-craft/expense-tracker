@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
-import type { Expense } from './types/expense';
+import type { Expense, ExpenseCategory } from './types/expense';
 import { getExpenses } from './services/api';
 import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
+import { ExpenseFilters } from './components/ExpenseFilters';
 import { CATEGORY_COLORS } from './utils/categories';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
@@ -12,6 +13,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [filterCategory, setFilterCategory] = useState<ExpenseCategory | 'all'>('all');
+  const [filterFrom, setFilterFrom] = useState('');
+  const [filterTo, setFilterTo] = useState('');
 
 
   const fetchExpenses = useCallback(async () => {
@@ -30,8 +34,14 @@ function App() {
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
-    const total = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const totalsByCategory = expenses.reduce<Record<string, number>>((acc, e) => {
+    const filteredExpenses = expenses.filter((e) => {
+    if (filterCategory !== 'all' && e.category !== filterCategory) return false;
+    if (filterFrom && e.date < filterFrom) return false;
+    if (filterTo && e.date > filterTo) return false;
+    return true;
+  });
+  const total = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const totalsByCategory = filteredExpenses.reduce<Record<string, number>>((acc, e) => {
     acc[e.category] = (acc[e.category] || 0) + e.amount;
     return acc;
   }, {});
@@ -43,6 +53,16 @@ function App() {
         <h1 className="text-4xl font-bold text-white mb-8">Expense Tracker</h1>
         <button onClick={signOut} className="mb-4 text-sm text-gray-400 hover:text-white">Cerrar sesión</button>
         <ExpenseForm expenseToEdit={editingExpense} onSaved={fetchExpenses} onCancelEdit={() => setEditingExpense(null)} />
+          <ExpenseFilters
+  category={filterCategory}
+  from={filterFrom}
+  to={filterTo}
+  onCategoryChange={setFilterCategory}
+  onFromChange={setFilterFrom}
+  onToChange={setFilterTo}
+  onClear={() => { setFilterCategory('all'); setFilterFrom(''); setFilterTo(''); }}
+/>
+
                 <div className="flex flex-wrap gap-2 mb-4">
           {Object.entries(totalsByCategory).map(([category, amount]) => (
             <div
@@ -60,7 +80,7 @@ function App() {
           <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
         </div>
 
-        <ExpenseList expenses={expenses} loading={loading} error={error} onExpenseDeleted={fetchExpenses} onEdit={setEditingExpense} />
+        <ExpenseList expenses={filteredExpenses} loading={loading} error={error} onExpenseDeleted={fetchExpenses} onEdit={setEditingExpense} />
 
       </div>
     </div>
