@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import type { Expense } from '../types/expense';
-import { CATEGORY_COLORS } from '../utils/categories';
+import { getCategoryColor, getCategoryLabel } from '../utils/categories';
 import { deleteExpense } from '../services/api';
 
 interface ExpenseListProps {
   expenses: Expense[];
   loading: boolean;
   error: string | null;
-    onExpenseDeleted: () => void;
-      onEdit: (expense: Expense) => void;
+  onExpenseDeleted: () => void;
+  onEdit: (expense: Expense) => void;
 }
+
 export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit }: ExpenseListProps) {
-    const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
+  const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const sorted = [...expenses].sort((a, b) => {
@@ -41,6 +42,7 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
   if (expenses.length === 0) {
     return <p className="text-gray-400">No hay gastos todavía.</p>;
   }
+
   async function handleDelete(id: string) {
     if (!window.confirm('¿Seguro que quieres eliminar este gasto?')) {
       return;
@@ -54,7 +56,7 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
   }
 
   return (
-        <>
+    <>
       <div className="flex gap-2 mb-3">
         <button
           onClick={() => toggleSort('date')}
@@ -70,43 +72,41 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
         </button>
       </div>
 
-    <ul className="space-y-3 w-full">
-      {sorted.map((expense) => (
-        <li
-          key={expense.id}
-          className="bg-gray-800 p-4 rounded-lg flex justify-between items-center"
-        >
+      <ul className="space-y-3 w-full">
+        {sorted.map((expense) => (
+          <li
+            key={expense.id}
+            className="bg-gray-800 p-4 rounded-lg flex justify-between items-center"
+          >
             <div className="flex items-center gap-3">
-              <span className={`w-3 h-3 rounded-full ${CATEGORY_COLORS[expense.category]}`} />
+              <span className={`w-3 h-3 rounded-full ${getCategoryColor(expense.category)}`} />
               <div>
                 <p className="text-white font-semibold">{expense.description}</p>
                 <p className="text-gray-400 text-sm">
-                  {expense.category} · {expense.date}
+                  {getCategoryLabel(expense.category)} · {expense.date}
                 </p>
               </div>
             </div>
-          <div className="flex items-center gap-4">
-          <p className="text-white text-lg font-bold">
-            ${expense.amount.toFixed(2)}
-          </p>
-                      <button
-              onClick={() => onEdit(expense)}
-              className="text-blue-400 hover:text-blue-300 text-sm"
-            >
-              Editar
-            </button>
-
-                      <button
-              onClick={() => handleDelete(expense.id)}
-              className="text-red-400 hover:text-red-300 text-sm"
-            >
-              Eliminar
-            </button>
-          </div>
-        </li>
-      ))}
-    </ul>
-        </>
-
+            <div className="flex items-center gap-4">
+              <p className="text-white text-lg font-bold">
+                ${expense.amount.toFixed(2)}
+              </p>
+              <button
+                onClick={() => onEdit(expense)}
+                className="text-blue-400 hover:text-blue-300 text-sm"
+              >
+                Editar
+              </button>
+              <button
+                onClick={() => handleDelete(expense.id)}
+                className="text-red-400 hover:text-red-300 text-sm"
+              >
+                Eliminar
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }

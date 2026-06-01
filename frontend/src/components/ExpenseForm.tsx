@@ -1,24 +1,19 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import type { ExpenseCategory, CreateExpenseInput, Expense } from '../types/expense';
+import type { CreateExpenseInput, Expense } from '../types/expense';
+import type { Category } from '../types/category';
 import { createExpense, updateExpense } from '../services/api';
-
-const CATEGORIES: ExpenseCategory[] = [
-  'food',
-  'transport',
-  'entertainment',
-  'bills',
-  'other',
-];
+import { DEFAULT_CATEGORIES, getCategoryLabel } from '../utils/categories';
 
 interface ExpenseFormProps {
   expenseToEdit: Expense | null;
+  categories: Category[];
   onSaved: () => void;
   onCancelEdit: () => void;
 }
 
-export function ExpenseForm({ expenseToEdit, onSaved, onCancelEdit }: ExpenseFormProps) {
+export function ExpenseForm({ expenseToEdit, categories, onSaved, onCancelEdit }: ExpenseFormProps) {
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<ExpenseCategory>('food');
+  const [category, setCategory] = useState<string>('food');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(
     () => new Date().toISOString().split('T')[0]
@@ -26,7 +21,14 @@ export function ExpenseForm({ expenseToEdit, onSaved, onCancelEdit }: ExpenseFor
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
+  const categoryOptions = Array.from(
+    new Set([
+      ...DEFAULT_CATEGORIES.map((c) => c.name),
+      ...categories.map((c) => c.name),
+    ])
+  );
+
+  useEffect(() => {
     if (expenseToEdit) {
       setAmount(String(expenseToEdit.amount));
       setCategory(expenseToEdit.category);
@@ -64,18 +66,16 @@ export function ExpenseForm({ expenseToEdit, onSaved, onCancelEdit }: ExpenseFor
 
     setSubmitting(true);
     try {
-            if (expenseToEdit) {
+      if (expenseToEdit) {
         await updateExpense(expenseToEdit.id, input);
       } else {
         await createExpense(input);
       }
-      // Limpiar form
       setAmount('');
       setDescription('');
       setCategory('food');
       setDate(new Date().toISOString().split('T')[0]);
-      // Avisar al padre que refresque la lista
-            onSaved();
+      onSaved();
       if (expenseToEdit) {
         onCancelEdit();
       }
@@ -92,7 +92,6 @@ export function ExpenseForm({ expenseToEdit, onSaved, onCancelEdit }: ExpenseFor
       className="bg-gray-800 p-6 rounded-lg space-y-4 mb-8"
     >
       <h2 className="text-xl font-semibold text-white">{expenseToEdit ? 'Editar gasto' : 'Agregar gasto'}</h2>
-
 
       <div>
         <label className="block text-sm text-gray-400 mb-1">Monto</label>
@@ -111,12 +110,12 @@ export function ExpenseForm({ expenseToEdit, onSaved, onCancelEdit }: ExpenseFor
         <label className="block text-sm text-gray-400 mb-1">Categoría</label>
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
+          onChange={(e) => setCategory(e.target.value)}
           className="w-full bg-gray-700 text-white px-3 py-2 rounded"
         >
-          {CATEGORIES.map((cat) => (
+          {categoryOptions.map((cat) => (
             <option key={cat} value={cat}>
-              {cat}
+              {getCategoryLabel(cat)}
             </option>
           ))}
         </select>
@@ -153,17 +152,16 @@ export function ExpenseForm({ expenseToEdit, onSaved, onCancelEdit }: ExpenseFor
         className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {submitting ? 'Guardando...' : expenseToEdit ? 'Guardar cambios' : 'Agregar gasto'}
-
       </button>
-              {expenseToEdit && (
-          <button
-            type="button"
-            onClick={onCancelEdit}
-            className="w-full bg-gray-600 text-white py-2 rounded font-semibold hover:bg-gray-700"
-          >
-            Cancelar
-          </button>
-        )}
+      {expenseToEdit && (
+        <button
+          type="button"
+          onClick={onCancelEdit}
+          className="w-full bg-gray-600 text-white py-2 rounded font-semibold hover:bg-gray-700"
+        >
+          Cancelar
+        </button>
+      )}
     </form>
   );
 }

@@ -9,7 +9,7 @@ export interface Expense {
   id: string;
   userId: string;
   amount: number;
-  category: ExpenseCategory;
+  category: string;
   description: string;
   date: string;
   createdAt: string;
@@ -17,7 +17,7 @@ export interface Expense {
 
 export interface CreateExpenseInput {
   amount: number;
-  category: ExpenseCategory;
+  category: string;
   description: string;
   date: string;
 }
