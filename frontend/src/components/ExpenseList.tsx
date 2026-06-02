@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Expense } from '../types/expense';
 import { getCategoryColor, getCategoryLabel } from '../utils/categories';
 import { currencySymbol } from '../utils/currency';
+import { getViewUrl } from '../services/receipts';
 import { deleteExpense } from '../services/api';
 
 interface ExpenseListProps {
@@ -17,9 +18,7 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const sorted = [...expenses].sort((a, b) => {
-    const cmp = sortBy === 'date'
-      ? a.date.localeCompare(b.date)
-      : a.amount - b.amount;
+    const cmp = sortBy === 'date' ? a.date.localeCompare(b.date) : a.amount - b.amount;
     return sortDir === 'asc' ? cmp : -cmp;
   });
 
@@ -56,29 +55,29 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
     }
   }
 
+  async function handleViewReceipt(key: string) {
+    try {
+      const url = await getViewUrl(key);
+      window.open(url, '_blank');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo abrir el recibo');
+    }
+  }
+
   return (
     <>
       <div className="flex gap-2 mb-3">
-        <button
-          onClick={() => toggleSort('date')}
-          className="bg-gray-700 text-white rounded px-3 py-1 text-sm"
-        >
+        <button onClick={() => toggleSort('date')} className="bg-gray-700 text-white rounded px-3 py-1 text-sm">
           Fecha {sortBy === 'date' ? `(${sortDir})` : ''}
         </button>
-        <button
-          onClick={() => toggleSort('amount')}
-          className="bg-gray-700 text-white rounded px-3 py-1 text-sm"
-        >
+        <button onClick={() => toggleSort('amount')} className="bg-gray-700 text-white rounded px-3 py-1 text-sm">
           Monto {sortBy === 'amount' ? `(${sortDir})` : ''}
         </button>
       </div>
 
       <ul className="space-y-3 w-full">
         {sorted.map((expense) => (
-          <li
-            key={expense.id}
-            className="bg-gray-800 p-4 rounded-lg flex justify-between items-center"
-          >
+          <li key={expense.id} className="bg-gray-800 p-4 rounded-lg flex justify-between items-center">
             <div className="flex items-center gap-3">
               <span className={`w-3 h-3 rounded-full ${getCategoryColor(expense.category)}`} />
               <div>
@@ -92,16 +91,15 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
               <p className="text-white text-lg font-bold">
                 {currencySymbol(expense.currency)}{expense.amount.toFixed(2)}
               </p>
-              <button
-                onClick={() => onEdit(expense)}
-                className="text-blue-400 hover:text-blue-300 text-sm"
-              >
+              {expense.receiptKey && (
+                <button onClick={() => handleViewReceipt(expense.receiptKey!)} className="text-green-400 hover:text-green-300 text-sm">
+                  Recibo
+                </button>
+              )}
+              <button onClick={() => onEdit(expense)} className="text-blue-400 hover:text-blue-300 text-sm">
                 Editar
               </button>
-              <button
-                onClick={() => handleDelete(expense.id)}
-                className="text-red-400 hover:text-red-300 text-sm"
-              >
+              <button onClick={() => handleDelete(expense.id)} className="text-red-400 hover:text-red-300 text-sm">
                 Eliminar
               </button>
             </div>

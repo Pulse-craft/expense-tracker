@@ -19,6 +19,7 @@ export interface Expense {
     category: ExpenseCategory;
     date: string; // ISO 8601 date (YYYY-MM-DD)
     description: string;
+    receiptKey?: string; // S3 object key del recibo subido
     createdAt: string; // ISO 8601 datetime
 }
 
@@ -31,4 +32,5 @@ export interface CreateExpenseInput {
     category: ExpenseCategory;
     date: string;
     description: string;
+    receiptKey?: string;
 }
