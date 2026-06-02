@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
-import type { Expense } from './types/expense';
+import type { Expense, Currency } from './types/expense';
 import type { Category } from './types/category';
 import { getExpenses } from './services/api';
 import { getCategories } from './services/categories';
+import { getUsdToEurRate } from './services/rates';
 import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
 import { ExpenseFilters } from './components/ExpenseFilters';
@@ -10,6 +11,7 @@ import { CategoryManager } from './components/CategoryManager';
 import { exportExpensesToCsv } from './utils/exportCsv';
 import { Dashboard } from './components/Dashboard';
 import { getCategoryColor, getCategoryLabel } from './utils/categories';
+import { convert, formatMoney, FALLBACK_USD_TO_EUR } from './utils/currency';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
 function App() {
@@ -22,6 +24,8 @@ function App() {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo, setFilterTo] = useState('');
+  const [displayCurrency, setDisplayCurrency] = useState<Currency>('USD');
+  const [usdToEur, setUsdToEur] = useState<number>(FALLBACK_USD_TO_EUR);
 
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
@@ -48,6 +52,7 @@ function App() {
   useEffect(() => {
     fetchExpenses();
     fetchCategories();
+    getUsdToEurRate().then(setUsdToEur);
   }, [fetchExpenses, fetchCategories]);
 
   const filteredExpenses = expenses.filter((e) => {
@@ -56,9 +61,13 @@ function App() {
     if (filterTo && e.date > filterTo) return false;
     return true;
   });
-  const total = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+  const total = filteredExpenses.reduce(
+    (sum, e) => sum + convert(e.amount, e.currency, displayCurrency, usdToEur),
+    0
+  );
   const totalsByCategory = filteredExpenses.reduce<Record<string, number>>((acc, e) => {
-    acc[e.category] = (acc[e.category] || 0) + e.amount;
+    acc[e.category] = (acc[e.category] || 0) + convert(e.amount, e.currency, displayCurrency, usdToEur);
     return acc;
   }, {});
 
@@ -67,7 +76,20 @@ function App() {
       <div className="max-w-2xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-8">Expense Tracker</h1>
         <button onClick={signOut} className="mb-4 text-sm text-gray-400 hover:text-white">Cerrar sesión</button>
-        <Dashboard expenses={expenses} />
+
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-sm text-gray-400">Mostrar totales en:</span>
+          <select
+            value={displayCurrency}
+            onChange={(e) => setDisplayCurrency(e.target.value as Currency)}
+            className="bg-gray-700 text-white rounded px-2 py-1 text-sm"
+          >
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+          </select>
+        </div>
+
+        <Dashboard expenses={expenses} displayCurrency={displayCurrency} usdToEur={usdToEur} />
         <ExpenseForm expenseToEdit={editingExpense} categories={categories} onSaved={fetchExpenses} onCancelEdit={() => setEditingExpense(null)} />
         <CategoryManager categories={categories} onChanged={fetchCategories} />
         <ExpenseFilters
@@ -94,14 +116,14 @@ function App() {
               className={`${getCategoryColor(category)} px-3 py-2 rounded-lg text-white text-sm flex gap-2 items-center`}
             >
               <span>{getCategoryLabel(category)}</span>
-              <span className="font-semibold">${amount.toFixed(2)}</span>
+              <span className="font-semibold">{formatMoney(amount, displayCurrency)}</span>
             </div>
           ))}
         </div>
 
         <div className="bg-gray-800 p-4 rounded-lg mb-4 flex justify-between items-center">
           <span className="text-sm text-gray-400 uppercase tracking-wide">Total</span>
-          <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
+          <span className="text-2xl font-bold text-white">{formatMoney(total, displayCurrency)}</span>
         </div>
 
         <ExpenseList expenses={filteredExpenses} loading={loading} error={error} onExpenseDeleted={fetchExpenses} onEdit={setEditingExpense} />

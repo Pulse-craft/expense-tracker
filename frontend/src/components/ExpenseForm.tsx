@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import type { CreateExpenseInput, Expense } from '../types/expense';
+import type { CreateExpenseInput, Expense, Currency } from '../types/expense';
 import type { Category } from '../types/category';
 import { createExpense, updateExpense } from '../services/api';
 import { DEFAULT_CATEGORIES, getCategoryLabel } from '../utils/categories';
@@ -13,6 +13,7 @@ interface ExpenseFormProps {
 
 export function ExpenseForm({ expenseToEdit, categories, onSaved, onCancelEdit }: ExpenseFormProps) {
   const [amount, setAmount] = useState('');
+  const [currency, setCurrency] = useState<Currency>('USD');
   const [category, setCategory] = useState<string>('food');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(
@@ -31,11 +32,13 @@ export function ExpenseForm({ expenseToEdit, categories, onSaved, onCancelEdit }
   useEffect(() => {
     if (expenseToEdit) {
       setAmount(String(expenseToEdit.amount));
+      setCurrency(expenseToEdit.currency ?? 'USD');
       setCategory(expenseToEdit.category);
       setDescription(expenseToEdit.description);
       setDate(expenseToEdit.date);
     } else {
       setAmount('');
+      setCurrency('USD');
       setCategory('food');
       setDescription('');
       setDate(new Date().toISOString().split('T')[0]);
@@ -59,6 +62,7 @@ export function ExpenseForm({ expenseToEdit, categories, onSaved, onCancelEdit }
 
     const input: CreateExpenseInput = {
       amount: amountNumber,
+      currency,
       category,
       description: description.trim(),
       date: date!,
@@ -72,8 +76,9 @@ export function ExpenseForm({ expenseToEdit, categories, onSaved, onCancelEdit }
         await createExpense(input);
       }
       setAmount('');
-      setDescription('');
+      setCurrency('USD');
       setCategory('food');
+      setDescription('');
       setDate(new Date().toISOString().split('T')[0]);
       onSaved();
       if (expenseToEdit) {
@@ -93,17 +98,30 @@ export function ExpenseForm({ expenseToEdit, categories, onSaved, onCancelEdit }
     >
       <h2 className="text-xl font-semibold text-white">{expenseToEdit ? 'Editar gasto' : 'Agregar gasto'}</h2>
 
-      <div>
-        <label className="block text-sm text-gray-400 mb-1">Monto</label>
-        <input
-          type="number"
-          step="0.01"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="0.00"
-          className="w-full bg-gray-700 text-white px-3 py-2 rounded"
-          required
-        />
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <label className="block text-sm text-gray-400 mb-1">Monto</label>
+          <input
+            type="number"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0.00"
+            className="w-full bg-gray-700 text-white px-3 py-2 rounded"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">Moneda</label>
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as Currency)}
+            className="bg-gray-700 text-white px-3 py-2 rounded"
+          >
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+          </select>
+        </div>
       </div>
 
       <div>
