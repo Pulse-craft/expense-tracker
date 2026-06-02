@@ -27,7 +27,7 @@ export function ExpenseFilters({
   return (
     <div className="bg-gray-800 p-4 rounded-lg mb-4 flex flex-wrap gap-3 items-end">
       <div className="flex flex-col">
-        <label className="text-xs text-gray-400 mb-1">Categoría</label>
+        <label className="text-xs text-gray-400 mb-1">Category</label>
         <select
           value={category}
           onChange={(e) => onCategoryChange(e.target.value)}
@@ -35,14 +35,14 @@ export function ExpenseFilters({
         >
           {options.map((c) => (
             <option key={c} value={c}>
-              {c === 'all' ? 'Todas' : getCategoryLabel(c)}
+              {c === 'all' ? 'All' : getCategoryLabel(c)}
             </option>
           ))}
         </select>
       </div>
 
       <div className="flex flex-col">
-        <label className="text-xs text-gray-400 mb-1">Desde</label>
+        <label className="text-xs text-gray-400 mb-1">From</label>
         <input
           type="date"
           value={from}
@@ -52,7 +52,7 @@ export function ExpenseFilters({
       </div>
 
       <div className="flex flex-col">
-        <label className="text-xs text-gray-400 mb-1">Hasta</label>
+        <label className="text-xs text-gray-400 mb-1">To</label>
         <input
           type="date"
           value={to}
@@ -65,7 +65,7 @@ export function ExpenseFilters({
         onClick={onClear}
         className="text-sm text-gray-400 hover:text-white px-2 py-1"
       >
-        Limpiar
+        Clear
       </button>
     </div>
   );

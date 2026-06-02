@@ -29,9 +29,8 @@ const parseInput = (body: string | null): { error: string } | { input: CreateExp
     if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         return { error: 'date must be a string in YYYY-MM-DD format' };
     }
-    if (typeof description !== 'string' || description.trim().length === 0) {
-        return { error: 'description must be a non-empty string' };
-    }
+
+    const safeDescription = typeof description === 'string' ? description.trim() : '';
 
     const normalizedCurrency: Currency =
         typeof currency === 'string' && currency.toUpperCase() === 'EUR' ? 'EUR' : 'USD';
@@ -42,7 +41,7 @@ const parseInput = (body: string | null): { error: string } | { input: CreateExp
             currency: normalizedCurrency,
             category: category.trim().toLowerCase() as ExpenseCategory,
             date,
-            description,
+            description: safeDescription,
             ...(typeof receiptKey === 'string' && receiptKey.length > 0 ? { receiptKey } : {}),
         },
     };

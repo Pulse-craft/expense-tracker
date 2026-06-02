@@ -30,7 +30,7 @@ export function CategoryManager({ categories, onChanged }: CategoryManagerProps)
       setNewName('');
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al crear');
+      setError(err instanceof Error ? err.message : 'Failed to create');
     } finally {
       setBusy(false);
     }
@@ -53,21 +53,21 @@ export function CategoryManager({ categories, onChanged }: CategoryManagerProps)
       setEditingName('');
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al editar');
+      setError(err instanceof Error ? err.message : 'Failed to edit');
     } finally {
       setBusy(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm('¿Borrar esta categoría?')) return;
+    if (!window.confirm('Delete this category?')) return;
     setBusy(true);
     setError(null);
     try {
       await deleteCategory(id);
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al borrar');
+      setError(err instanceof Error ? err.message : 'Failed to delete');
     } finally {
       setBusy(false);
     }
@@ -79,7 +79,7 @@ export function CategoryManager({ categories, onChanged }: CategoryManagerProps)
         onClick={() => setOpen((o) => !o)}
         className="text-sm text-gray-300 hover:text-white"
       >
-        {open ? '▾' : '▸'} Administrar categorías
+        {open ? '▾' : '▸'} Manage categories
       </button>
 
       {open && (
@@ -88,7 +88,7 @@ export function CategoryManager({ categories, onChanged }: CategoryManagerProps)
 
           <div>
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
-              Por defecto
+              Default
             </p>
             <div className="flex flex-wrap gap-2">
               {DEFAULT_CATEGORIES.map((c) => (
@@ -104,11 +104,11 @@ export function CategoryManager({ categories, onChanged }: CategoryManagerProps)
 
           <div>
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
-              Personalizadas
+              Custom
             </p>
             {categories.length === 0 && (
               <p className="text-sm text-gray-500">
-                Aún no tienes categorías personalizadas.
+                You don't have any custom categories yet.
               </p>
             )}
             <div className="space-y-2">
@@ -129,13 +129,13 @@ export function CategoryManager({ categories, onChanged }: CategoryManagerProps)
                         disabled={busy}
                         className="text-sm text-green-400 hover:text-green-300"
                       >
-                        Guardar
+                        Save
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
                         className="text-sm text-gray-400 hover:text-white"
                       >
-                        Cancelar
+                        Cancel
                       </button>
                     </>
                   ) : (
@@ -147,14 +147,14 @@ export function CategoryManager({ categories, onChanged }: CategoryManagerProps)
                         onClick={() => startEdit(cat)}
                         className="text-sm text-blue-400 hover:text-blue-300"
                       >
-                        Editar
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDelete(cat.id)}
                         disabled={busy}
                         className="text-sm text-red-400 hover:text-red-300"
                       >
-                        Borrar
+                        Delete
                       </button>
                     </>
                   )}
@@ -167,7 +167,7 @@ export function CategoryManager({ categories, onChanged }: CategoryManagerProps)
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Nueva categoría"
+              placeholder="New category"
               className="flex-1 bg-gray-700 text-white rounded px-3 py-2 text-sm"
             />
             <button
@@ -175,7 +175,7 @@ export function CategoryManager({ categories, onChanged }: CategoryManagerProps)
               disabled={busy || !newName.trim()}
               className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm"
             >
-              Agregar
+              Add
             </button>
           </div>
         </div>
