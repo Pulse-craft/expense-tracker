@@ -1,6 +1,16 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { CreateExpenseInput, Expense, ExpenseCategory, Currency } from './types/expense';
+import { z } from 'zod';
+import { CreateExpenseInput, Expense, ExpenseCategory } from './types/expense';
 import { saveExpense } from './services/expenseRepository';
+
+const expenseSchema = z.object({
+    amount: z.number().positive('amount must be a positive number'),
+    currency: z.enum(['USD', 'EUR']).catch('USD'),
+    category: z.string().trim().min(1, 'category is required').max(30, 'category must be at most 30 characters'),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be in YYYY-MM-DD format'),
+    description: z.string().trim().optional().default(''),
+    receiptKey: z.string().min(1).optional(),
+});
 
 const parseInput = (body: string | null): { error: string } | { input: CreateExpenseInput } => {
     if (!body) {
@@ -14,35 +24,20 @@ const parseInput = (body: string | null): { error: string } | { input: CreateExp
         return { error: 'Body must be valid JSON' };
     }
 
-    if (typeof parsed !== 'object' || parsed === null) {
-        return { error: 'Body must be a JSON object' };
+    const result = expenseSchema.safeParse(parsed);
+    if (!result.success) {
+        return { error: result.error.issues[0]?.message ?? 'Invalid input' };
     }
 
-    const { amount, category, date, description, currency, receiptKey } = parsed as Record<string, unknown>;
-
-    if (typeof amount !== 'number' || amount <= 0) {
-        return { error: 'amount must be a positive number' };
-    }
-    if (typeof category !== 'string' || category.trim().length === 0 || category.trim().length > 30) {
-        return { error: 'category must be a non-empty string (max 30 characters)' };
-    }
-    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        return { error: 'date must be a string in YYYY-MM-DD format' };
-    }
-
-    const safeDescription = typeof description === 'string' ? description.trim() : '';
-
-    const normalizedCurrency: Currency =
-        typeof currency === 'string' && currency.toUpperCase() === 'EUR' ? 'EUR' : 'USD';
-
+    const data = result.data;
     return {
         input: {
-            amount,
-            currency: normalizedCurrency,
-            category: category.trim().toLowerCase() as ExpenseCategory,
-            date,
-            description: safeDescription,
-            ...(typeof receiptKey === 'string' && receiptKey.length > 0 ? { receiptKey } : {}),
+            amount: data.amount,
+            currency: data.currency,
+            category: data.category.toLowerCase() as ExpenseCategory,
+            date: data.date,
+            description: data.description,
+            ...(data.receiptKey ? { receiptKey: data.receiptKey } : {}),
         },
     };
 };
