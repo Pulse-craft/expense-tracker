@@ -34,22 +34,22 @@ export function Dashboard({ expenses, displayCurrency, usdToEur }: DashboardProp
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const label = d.toLocaleDateString('es', { month: 'short' });
-    const monto = expenses
+    const label = d.toLocaleDateString('en', { month: 'short' });
+    const total = expenses
       .filter((e) => e.date.startsWith(key))
       .reduce((sum, e) => sum + conv(e), 0);
-    monthsData.push({ mes: label, monto });
+    monthsData.push({ month: label, total });
   }
 
   return (
     <div className="bg-gray-800 p-4 rounded-lg mb-4">
-      <h2 className="text-lg font-bold text-white mb-3">Resumen</h2>
+      <h2 className="text-lg font-bold text-white mb-3">Summary</h2>
       <div className="bg-gray-700 p-3 rounded-lg">
-        <p className="text-sm text-gray-400 uppercase tracking-wide">Total del mes</p>
+        <p className="text-sm text-gray-400 uppercase tracking-wide">This month's total</p>
         <p className="text-2xl font-bold text-white">{formatMoney(monthTotal, displayCurrency)}</p>
       </div>
       <div className="mt-3">
-        <p className="text-sm text-gray-400 uppercase tracking-wide mb-2">Top categorías</p>
+        <p className="text-sm text-gray-400 uppercase tracking-wide mb-2">Top categories</p>
         {top3.map(([category, amount]) => (
           <div key={category} className="flex justify-between text-white text-sm mb-1">
             <span>{getCategoryLabel(category)}</span>
@@ -61,14 +61,14 @@ export function Dashboard({ expenses, displayCurrency, usdToEur }: DashboardProp
         ))}
       </div>
       <div className="mt-4">
-        <p className="text-sm text-gray-400 uppercase tracking-wide mb-2">Últimos 6 meses</p>
+        <p className="text-sm text-gray-400 uppercase tracking-wide mb-2">Last 6 months</p>
         <div style={{ width: '100%', height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={monthsData}>
-              <XAxis dataKey="mes" stroke="#9ca3af" />
+              <XAxis dataKey="month" stroke="#9ca3af" />
               <YAxis stroke="#9ca3af" />
               <Tooltip />
-              <Bar dataKey="monto" fill="#3b82f6" />
+              <Bar dataKey="total" fill="#3b82f6" />
             </BarChart>
           </ResponsiveContainer>
         </div>

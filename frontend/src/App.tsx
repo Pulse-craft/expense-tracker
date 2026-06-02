@@ -34,7 +34,7 @@ function App() {
       const data = await getExpenses();
       setExpenses(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -75,10 +75,10 @@ function App() {
     <div className="min-h-screen bg-gray-900 p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-8">Expense Tracker</h1>
-        <button onClick={signOut} className="mb-4 text-sm text-gray-400 hover:text-white">Cerrar sesión</button>
+        <button onClick={signOut} className="mb-4 text-sm text-gray-400 hover:text-white">Sign out</button>
 
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-gray-400">Mostrar totales en:</span>
+          <span className="text-sm text-gray-400">Show totals in:</span>
           <select
             value={displayCurrency}
             onChange={(e) => setDisplayCurrency(e.target.value as Currency)}
@@ -106,7 +106,7 @@ function App() {
           onClick={() => exportExpensesToCsv(filteredExpenses)}
           className="mb-4 bg-green-600 hover:bg-green-500 text-white rounded-lg px-4 py-2 text-sm"
         >
-          Exportar CSV
+          Export CSV
         </button>
 
         <div className="flex flex-wrap gap-2 mb-4">

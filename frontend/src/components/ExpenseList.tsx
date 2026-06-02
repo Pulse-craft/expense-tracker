@@ -13,16 +13,25 @@ interface ExpenseListProps {
   onEdit: (expense: Expense) => void;
 }
 
+type SortField = 'date' | 'amount' | 'category';
+
 export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit }: ExpenseListProps) {
-  const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
+  const [sortBy, setSortBy] = useState<SortField>('date');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const sorted = [...expenses].sort((a, b) => {
-    const cmp = sortBy === 'date' ? a.date.localeCompare(b.date) : a.amount - b.amount;
+    let cmp: number;
+    if (sortBy === 'date') {
+      cmp = a.date.localeCompare(b.date);
+    } else if (sortBy === 'amount') {
+      cmp = a.amount - b.amount;
+    } else {
+      cmp = a.category.localeCompare(b.category);
+    }
     return sortDir === 'asc' ? cmp : -cmp;
   });
 
-  function toggleSort(field: 'date' | 'amount') {
+  function toggleSort(field: SortField) {
     if (sortBy === field) {
       setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
     } else {
@@ -32,7 +41,7 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
   }
 
   if (loading) {
-    return <p className="text-gray-400">Cargando gastos...</p>;
+    return <p className="text-gray-400">Loading expenses...</p>;
   }
 
   if (error) {
@@ -40,18 +49,18 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
   }
 
   if (expenses.length === 0) {
-    return <p className="text-gray-400">No hay gastos todavía.</p>;
+    return <p className="text-gray-400">No expenses yet.</p>;
   }
 
   async function handleDelete(id: string) {
-    if (!window.confirm('¿Seguro que quieres eliminar este gasto?')) {
+    if (!window.confirm('Are you sure you want to delete this expense?')) {
       return;
     }
     try {
       await deleteExpense(id);
       onExpenseDeleted();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error al eliminar el gasto');
+      alert(err instanceof Error ? err.message : 'Failed to delete the expense');
     }
   }
 
@@ -60,24 +69,39 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
       const url = await getViewUrl(key);
       window.open(url, '_blank');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'No se pudo abrir el recibo');
+      alert(err instanceof Error ? err.message : "Couldn't open the receipt");
     }
   }
 
   return (
     <>
       <div className="flex gap-2 mb-3">
-        <button onClick={() => toggleSort('date')} className="bg-gray-700 text-white rounded px-3 py-1 text-sm">
-          Fecha {sortBy === 'date' ? `(${sortDir})` : ''}
+        <button
+          onClick={() => toggleSort('date')}
+          className="bg-gray-700 text-white rounded px-3 py-1 text-sm"
+        >
+          Date {sortBy === 'date' ? `(${sortDir})` : ''}
         </button>
-        <button onClick={() => toggleSort('amount')} className="bg-gray-700 text-white rounded px-3 py-1 text-sm">
-          Monto {sortBy === 'amount' ? `(${sortDir})` : ''}
+        <button
+          onClick={() => toggleSort('amount')}
+          className="bg-gray-700 text-white rounded px-3 py-1 text-sm"
+        >
+          Amount {sortBy === 'amount' ? `(${sortDir})` : ''}
+        </button>
+        <button
+          onClick={() => toggleSort('category')}
+          className="bg-gray-700 text-white rounded px-3 py-1 text-sm"
+        >
+          Category {sortBy === 'category' ? `(${sortDir})` : ''}
         </button>
       </div>
 
       <ul className="space-y-3 w-full">
         {sorted.map((expense) => (
-          <li key={expense.id} className="bg-gray-800 p-4 rounded-lg flex justify-between items-center">
+          <li
+            key={expense.id}
+            className="bg-gray-800 p-4 rounded-lg flex justify-between items-center"
+          >
             <div className="flex items-center gap-3">
               <span className={`w-3 h-3 rounded-full ${getCategoryColor(expense.category)}`} />
               <div>
@@ -93,14 +117,20 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
               </p>
               {expense.receiptKey && (
                 <button onClick={() => handleViewReceipt(expense.receiptKey!)} className="text-green-400 hover:text-green-300 text-sm">
-                  Recibo
+                  Receipt
                 </button>
               )}
-              <button onClick={() => onEdit(expense)} className="text-blue-400 hover:text-blue-300 text-sm">
-                Editar
+              <button
+                onClick={() => onEdit(expense)}
+                className="text-blue-400 hover:text-blue-300 text-sm"
+              >
+                Edit
               </button>
-              <button onClick={() => handleDelete(expense.id)} className="text-red-400 hover:text-red-300 text-sm">
-                Eliminar
+              <button
+                onClick={() => handleDelete(expense.id)}
+                className="text-red-400 hover:text-red-300 text-sm"
+              >
+                Delete
               </button>
             </div>
           </li>

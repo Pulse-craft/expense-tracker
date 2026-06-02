@@ -1,13 +1,14 @@
 import type { Expense } from '../types/expense';
 
 export function exportExpensesToCsv(expenses: Expense[]) {
-  const headers = ['Fecha', 'Categoria', 'Descripcion', 'Monto'];
+  const headers = ['Date', 'Amount', 'Currency', 'Category', 'Description'];
 
   const rows = expenses.map((e) => [
     e.date,
-    e.category,
-    `"${e.description.replace(/"/g, '""')}"`,
     e.amount.toFixed(2),
+    e.currency ?? 'USD',
+    e.category,
+    `"${(e.description ?? '').replace(/"/g, '""')}"`,
   ]);
 
   const csv = [headers, ...rows]
@@ -18,7 +19,7 @@ export function exportExpensesToCsv(expenses: Expense[]) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'gastos.csv';
+  link.download = 'expenses.csv';
   link.click();
   URL.revokeObjectURL(url);
 }
