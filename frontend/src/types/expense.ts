@@ -10,6 +10,7 @@ export interface Expense {
   category: string;
   description: string;
   date: string;
+  receiptKey?: string;
   createdAt: string;
 }
 
@@ -19,4 +20,5 @@ export interface CreateExpenseInput {
   category: string;
   description: string;
   date: string;
+  receiptKey?: string;
 }
