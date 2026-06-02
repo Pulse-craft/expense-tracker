@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Expense } from '../types/expense';
 import { getCategoryColor, getCategoryLabel } from '../utils/categories';
+import { currencySymbol } from '../utils/currency';
 import { deleteExpense } from '../services/api';
 
 interface ExpenseListProps {
@@ -89,7 +90,7 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
             </div>
             <div className="flex items-center gap-4">
               <p className="text-white text-lg font-bold">
-                ${expense.amount.toFixed(2)}
+                {currencySymbol(expense.currency)}{expense.amount.toFixed(2)}
               </p>
               <button
                 onClick={() => onEdit(expense)}
