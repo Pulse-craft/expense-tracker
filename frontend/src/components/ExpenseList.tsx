@@ -75,7 +75,7 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
 
   return (
     <>
-      <div className="flex gap-2 mb-3">
+      <div className="flex flex-wrap gap-2 mb-3">
         <button
           onClick={() => toggleSort('date')}
           className="bg-gray-700 text-white rounded px-3 py-1 text-sm"
@@ -100,18 +100,18 @@ export function ExpenseList({ expenses, loading, error, onExpenseDeleted, onEdit
         {sorted.map((expense) => (
           <li
             key={expense.id}
-            className="bg-gray-800 p-4 rounded-lg flex justify-between items-center"
+            className="bg-gray-800 p-4 rounded-lg flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center"
           >
             <div className="flex items-center gap-3">
-              <span className={`w-3 h-3 rounded-full ${getCategoryColor(expense.category)}`} />
+              <span className={`w-3 h-3 rounded-full shrink-0 ${getCategoryColor(expense.category)}`} />
               <div>
-                <p className="text-white font-semibold">{expense.description}</p>
+                <p className="text-white font-semibold break-words">{expense.description}</p>
                 <p className="text-gray-400 text-sm">
                   {getCategoryLabel(expense.category)} · {expense.date}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <p className="text-white text-lg font-bold">
                 {currencySymbol(expense.currency)}{expense.amount.toFixed(2)}
               </p>

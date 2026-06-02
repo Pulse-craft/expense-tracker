@@ -72,9 +72,9 @@ function App() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-gray-900 p-8">
+    <div className="min-h-screen bg-gray-900 p-4 sm:p-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-4xl font-bold text-white mb-8">Expense Tracker</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-6 sm:mb-8">Expense Tracker</h1>
         <button onClick={signOut} className="mb-4 text-sm text-gray-400 hover:text-white">Sign out</button>
 
         <div className="flex items-center gap-2 mb-4">
