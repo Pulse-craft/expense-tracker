@@ -18,7 +18,7 @@ const parseInput = (body: string | null): { error: string } | { input: CreateExp
         return { error: 'Body must be a JSON object' };
     }
 
-    const { amount, category, date, description, currency } = parsed as Record<string, unknown>;
+    const { amount, category, date, description, currency, receiptKey } = parsed as Record<string, unknown>;
 
     if (typeof amount !== 'number' || amount <= 0) {
         return { error: 'amount must be a positive number' };
@@ -43,6 +43,7 @@ const parseInput = (body: string | null): { error: string } | { input: CreateExp
             category: category.trim().toLowerCase() as ExpenseCategory,
             date,
             description,
+            ...(typeof receiptKey === 'string' && receiptKey.length > 0 ? { receiptKey } : {}),
         },
     };
 };

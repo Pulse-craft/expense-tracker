@@ -283,6 +283,59 @@ Resources:
 
 
 
+    ReceiptsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: !Sub "${AWS::StackName}-receipts-${AWS::AccountId}"
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - PUT
+                - GET
+              AllowedOrigins:
+                - "https://main.d1bfigmggittui.amplifyapp.com"
+              MaxAge: 3000
+    ReceiptsFunction:
+      Type: AWS::Serverless::Function
+      Properties:
+        CodeUri: receipts/
+        Handler: app.lambdaHandler
+        Runtime: nodejs22.x
+        Architectures:
+          - x86_64
+        Environment:
+          Variables:
+            RECEIPTS_BUCKET_NAME: !Ref ReceiptsBucket
+        Policies:
+          - S3CrudPolicy:
+              BucketName: !Ref ReceiptsBucket
+        Events:
+          CreateUploadUrl:
+            Type: Api
+            Properties:
+              Path: /receipts/upload-url
+              Method: post
+          CreateViewUrl:
+            Type: Api
+            Properties:
+              Path: /receipts/view-url
+              Method: get
+      Metadata:
+        BuildMethod: esbuild
+        BuildProperties:
+          Minify: true
+          Target: "es2020"
+          Sourcemap: true
+          EntryPoints:
+            - app.ts
+
 Outputs:
   CreateExpenseApi:
     Description: API Gateway endpoint URL for Prod stage for Create Expense function
