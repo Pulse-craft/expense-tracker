@@ -111,3 +111,9 @@ VITE_USER_POOL_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxx
 
 ## Known limitations
 See the final section of [DECISIONS.md](./DECISIONS.md).
+
+## Cost Report
+
+This project runs entirely within the AWS Free Tier. A $1 billing alarm and a $1 AWS Budget are configured as safeguards. The screenshot below, from the AWS Billing console, confirms the account is not being charged.
+
+![Cost report](docs/cost-report.png)
