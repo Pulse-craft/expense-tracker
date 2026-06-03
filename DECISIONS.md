@@ -175,6 +175,23 @@ This document tracks significant technical choices made during the project, the 
 
 ---
 
+## 12. Input Validation with Zod
+
+**Chosen:** Validate all expense input on the backend with Zod. A shared `expenseSchema` is parsed with `safeParse` inside the create and update Lambda functions; invalid requests get a 400 with a clear message before anything is written to DynamoDB.
+
+**Alternatives considered:** Joi, manual `if` checks, or validating only on the frontend.
+
+**Reasoning:**
+- The spec requires input validation with "Zod, Joi, or similar".
+- Zod is TypeScript-first: the schema infers the types, so validation and the `Expense` type stay in sync without using `any`.
+- `safeParse` lets the Lambda return a controlled 400 instead of throwing.
+- Backend validation is the real security boundary; frontend checks alone can be bypassed.
+- The schema enforces the spec's rules: positive amount, currency limited to USD/EUR, category length, a `YYYY-MM-DD` date, optional description, and an optional receipt key.
+
+**Tradeoffs:** Adds a small dependency to each function's bundle. Custom categories are still validated with a manual name check rather than Zod (acceptable for now; noted here for honesty).
+
+---
+
 ## Resolved / Pending Decisions
 
 - [x] RDS PostgreSQL vs DynamoDB -> DynamoDB (Decision 5)
@@ -183,3 +200,4 @@ This document tracks significant technical choices made during the project, the 
 - [x] React state management -> React local state / Context (Decision 11)
 - [x] Chart library -> Recharts (Decision 11)
 - [x] Deployment automation -> SAM for backend; Amplify auto-deploy on merge to main (Decision 11)
+- [x] Input validation library -> Zod (Decision 12)
